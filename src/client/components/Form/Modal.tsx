@@ -93,7 +93,7 @@ const Modal: React.FC<ModalProps> = ({ children, isOpen, closeModal }) => {
       <ModalWindow>
         {children}
         <Button onClick={closeModal} styles="width: fit-content;float: right;">
-          Close
+          Đóng
         </Button>
       </ModalWindow>
     </Overlay>,

@@ -34,15 +34,15 @@ const DocContent = (id: string) => {
         {doc.title}
       </Heading>
       <Heading as="h4" size="small">
-        About
+        Giới thiệu
       </Heading>
       <p className="doc-desc">{doc.description}</p>
       <Heading as="h4" size="small">
-        Use Cases
+        Dùng để làm gì
       </Heading>
       <p className="doc-uses">{doc.use}</p>
       <Heading as="h4" size="small">
-        Links
+        Tài liệu tham khảo
       </Heading>
       <ul>
         {doc.resources.map((resource: string | { title: string; link: string }, index: number) =>
@@ -64,10 +64,10 @@ const DocContent = (id: string) => {
       <details>
         <summary>
           <Heading as="h4" size="small">
-            Example
+            Ví dụ
           </Heading>
         </summary>
-        <img width="300" src={doc.screenshot} alt="Screenshot" />
+        <img width="300" src={doc.screenshot} alt="Ảnh minh hoạ" />
       </details>
     </JobDocsContainer>
   ) : (
