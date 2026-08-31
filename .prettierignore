@@ -1,0 +1,7 @@
+# Bản bàn giao thiết kế từ Claude Design — tài liệu nguồn, không phải code của
+# dự án. Không định dạng, không sửa: nó phải khớp nguyên bản để đối chiếu.
+# (Thư mục này cũng được loại khỏi git qua .git/info/exclude.)
+hvn-webcheck-layout-design/
+
+# Kết quả build
+dist/

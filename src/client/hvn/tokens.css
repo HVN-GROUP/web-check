@@ -1,0 +1,123 @@
+/* ============================================================
+   HVN Group — design tokens cho webcheck.onl
+   Trích từ bản bàn giao Claude Design:
+     _ds/hvn-group-design-system-website-2337eb67…/colors_and_type.css
+     _ds/…/ui_kits/webapp-v2/theme.css
+   Giữ nguyên TÊN token của design system để đối chiếu 1-1 với bản thiết kế.
+   ============================================================ */
+
+:root {
+  /* ---------- BRAND ---------- */
+  --hvn-red: #ea4445; /* primary — CTA, nhấn thương hiệu */
+  --hvn-red-dark: #c93939; /* hover, tiêu đề phụ nhấn mạnh */
+  --hvn-red-tint: #fdecec; /* nền nhạt: chú ý, trích dẫn, callout */
+  --hvn-red-tint-border: #fbd3d3; /* viền nút "Tư vấn" trong bảng cảnh báo */
+
+  /* ---------- NEUTRALS ---------- */
+  --hvn-ink: #333333; /* chữ nội dung — dịu hơn đen tuyệt đối */
+  --hvn-gray: #808080; /* chữ phụ, icon mờ, đường phân cách */
+  --hvn-surface: #f5f5f5; /* nền trang kết quả */
+  --hvn-white: #ffffff;
+
+  --hvn-gray-100: #f5f5f5;
+  --hvn-gray-200: #ececec;
+  --hvn-gray-300: #dcdcdc; /* viền */
+  --hvn-gray-400: #bfbfbf; /* chữ mờ */
+  --hvn-gray-500: #808080;
+  --hvn-gray-600: #595959; /* chữ phụ đậm */
+  --hvn-gray-700: #333333;
+  --hvn-gray-900: #1a1a1a; /* tiêu đề, panel tối */
+
+  /* ---------- FUNCTIONAL (chỉ dùng cho phản hồi UI) ---------- */
+  --hvn-success: #28a745;
+  --hvn-info: #17a2b8;
+  --hvn-warning: #ffc107;
+  --hvn-danger: #ea4445; /* lỗi dùng lại đỏ thương hiệu */
+  --hvn-danger-deep: #a82822; /* mức nghiêm trọng nhất, tách khỏi đỏ CTA */
+
+  --hvn-success-tint: #e7f6ec;
+  --hvn-info-tint: #e4f4f7;
+  --hvn-warning-tint: #fff6dd;
+  /* chữ trên nền vàng nhạt — #FFC107 không đủ tương phản để đọc */
+  --hvn-warning-fg: #b58500;
+  --hvn-warning-fg-strong: #5c4600;
+
+  /* ---------- SEMANTIC ---------- */
+  --fg1: var(--hvn-ink);
+  --fg2: var(--hvn-gray);
+  --fg-inverse: var(--hvn-white);
+  --bg1: var(--hvn-white);
+  --bg2: var(--hvn-surface);
+  --accent: var(--hvn-red);
+  --accent-hover: var(--hvn-red-dark);
+  --border: var(--hvn-gray-300);
+  --border-strong: var(--hvn-gray-400);
+
+  /* ---------- TYPOGRAPHY ---------- */
+  /* Google Sans là phông thương hiệu trong design system. Nó KHÔNG được
+     nhúng ở đây: font đó thuộc Google, không cấp phép mở như Roboto/Noto, nên
+     việc tự host trên site thương mại cần xác nhận bản quyền trước. Cho tới
+     lúc đó, stack dưới đây rơi về phông hệ thống với hình dáng gần nhất. */
+  --font-sans: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: 'SF Mono', 'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, monospace;
+
+  --w-regular: 400;
+  --w-medium: 500;
+  --w-semibold: 600;
+  --w-bold: 700;
+
+  --lh-tight: 1.1;
+  --lh-snug: 1.25;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.7;
+
+  --tracking-tight: -0.02em;
+  --tracking-caps: 0.08em;
+
+  /* ---------- RADII ---------- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-pill: 999px;
+
+  /* ---------- ELEVATION ---------- */
+  --shadow-xs: 0 1px 2px rgba(35, 31, 32, 0.06);
+  --shadow-sm: 0 1px 3px rgba(35, 31, 32, 0.08), 0 1px 2px rgba(35, 31, 32, 0.06);
+  --shadow-md: 0 4px 12px rgba(35, 31, 32, 0.08), 0 2px 4px rgba(35, 31, 32, 0.05);
+  --shadow-lg: 0 12px 28px rgba(35, 31, 32, 0.1), 0 4px 8px rgba(35, 31, 32, 0.06);
+  --shadow-red: 0 8px 24px rgba(234, 68, 69, 0.28);
+
+  /* ---------- MOTION ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+
+  /* ---------- LAYOUT (đo từ bản thiết kế) ---------- */
+  --page-max: 1240px;
+  --page-pad: 40px;
+  --topbar-h: 74px;
+}
+
+/* Bàn phím phải thấy được tiêu điểm; chuột thì không hiện viền. */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--hvn-red);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

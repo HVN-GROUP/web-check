@@ -1,39 +1,44 @@
+/* Tokens HVN phải nạp trước, vì các quy tắc dưới đây tham chiếu tới chúng. */
+@import '../hvn/tokens.css';
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #141517;
-  color: #fff;
+  background: var(--hvn-surface);
+  color: var(--hvn-ink);
 }
 
 code {
   font-family: var(--font-mono);
 }
 #fancy-background {
-  color: var(--background, #141517);
+  color: var(--hvn-surface);
 }
 
 ::selection {
-  background: var(--primary, #d6fb41);
-  color: var(--background, #141517);
+  background: rgba(234, 68, 69, 0.22);
+  color: var(--hvn-ink);
 }
 
+/* Bản đồ react-simple-maps: nền phải khớp thẻ chứa nó, nếu không sẽ hiện một
+   ô tối trên thẻ trắng. */
 svg.rsm-svg {
-  background: #141517;
-  border-radius: 6px;
+  background: var(--hvn-gray-100);
+  border-radius: var(--r-sm);
 }
 
 :root {
-  --toastify-color-dark: #111927 !important;
-  --toastify-color-info: #04e4f4 !important;
-  --toastify-color-success: #20e253 !important;
-  --toastify-color-warning: #f6f000 !important;
-  --toastify-color-error: #f80363 !important;
+  --toastify-color-dark: var(--hvn-gray-900) !important;
+  --toastify-color-info: var(--hvn-info) !important;
+  --toastify-color-success: var(--hvn-success) !important;
+  --toastify-color-warning: var(--hvn-warning) !important;
+  --toastify-color-error: var(--hvn-danger) !important;
 }
 
 #fancy-background {

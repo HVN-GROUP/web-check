@@ -4,10 +4,8 @@ import styled from '@emotion/styled';
 import { ToastContainer } from 'react-toastify';
 
 import colors from 'client/styles/colors';
-import Heading from 'client/components/Form/Heading';
 import Modal from 'client/components/Form/Modal';
 import Footer from 'client/components/misc/Footer';
-import Nav from 'client/components/Form/Nav';
 import Loader from 'client/components/misc/Loader';
 import ErrorBoundary from 'client/components/misc/ErrorBoundary';
 import DocContent from 'client/components/misc/DocContent';
@@ -17,10 +15,15 @@ import ProgressBar, {
 } from 'client/components/misc/ProgressBar';
 import ActionButtons from 'client/components/misc/ActionButtons';
 import AdditionalResources from 'client/components/misc/AdditionalResources';
-import AdvisoryPanel from 'client/components/misc/AdvisoryPanel';
 import NoResults from 'client/components/misc/NoResults';
 import ResultsMasonryGrid from 'client/components/misc/ResultsMasonryGrid';
 import ViewRaw from 'client/components/misc/ViewRaw';
+
+// Lớp giao diện HVN — thay thế AdvisoryPanel của upstream bằng bảng cảnh báo
+// có gắn dịch vụ. Toàn bộ nằm trong client/hvn/, không sửa file upstream.
+import ResultsTopBar from 'client/hvn/components/ResultsTopBar';
+import ScoreBoard from 'client/hvn/components/ScoreBoard';
+import AdvisoryTable from 'client/hvn/components/AdvisoryTable';
 
 import { determineAddressType, type AddressType } from 'client/utils/address-type-checker';
 import { hasData } from 'client/utils/result-processor';
@@ -33,7 +36,6 @@ const ResultsOuter = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding-top: 1rem;
 `;
 
 const ResultsContent = styled.section`
@@ -137,6 +139,14 @@ const Results = (props: { address?: string }): JSX.Element => {
 
   const findings = useMemo(() => runAnalysis(jobsState), [jobsState]);
 
+  // Dữ liệu cho thanh trên cùng của bản thiết kế HVN
+  const scannedAt = useMemo(() => new Date(), [address]);
+  const doneCount = loadingJobs.filter((j) => j.state !== 'loading').length;
+  const elapsedMs = loadingJobs.reduce((max, j) => Math.max(max, j.timeTaken || 0), 0);
+  const siteIsSecure = jobsState['ssl']?.state === 'success';
+  const targetHref = /^https?:\/\//i.test(address) ? address : `https://${address}`;
+  const rescanAll = () => allCardIds.forEach((id) => retry(id));
+
   // Detect a catastrophic API outage when the bulk of settled jobs error or time out
   const apiUnreachable = useMemo(() => {
     const entries = Object.values(jobsState);
@@ -178,28 +188,25 @@ const Results = (props: { address?: string }): JSX.Element => {
 
   return (
     <ResultsOuter>
-      <Nav>
-        {address && (
-          <Heading color={colors.textColor} size="medium">
-            {addressType === 'url' && (
-              <a
-                target="_blank"
-                rel="noreferrer"
-                href={/^https?:\/\//i.test(address) ? address : `https://${address}`}
-              >
-                <img width="32px" alt="" src={`https://icon.horse/icon/${makeSiteName(address)}`} />
-              </a>
-            )}
-            {makeSiteName(address)}
-          </Heading>
-        )}
-      </Nav>
+      {address && (
+        <ResultsTopBar
+          siteName={makeSiteName(address)}
+          href={targetHref}
+          secure={siteIsSecure}
+          doneCount={doneCount}
+          totalCount={allCardIds.length}
+          elapsedMs={elapsedMs}
+          scannedAt={scannedAt}
+          onRescan={rescanAll}
+        />
+      )}
       {errorKind && (
         <NoResults kind={errorKind} address={address} error={ipLookupError || skipReason} />
       )}
       <ProgressBar loadStatus={loadingJobs} showModal={showErrorModal} showJobDocs={showInfo} />
-      <Loader show={loadingJobs.filter((j) => j.state !== 'loading').length < 5} />
-      <AdvisoryPanel findings={findings} onJumpTo={jumpToCard} />
+      <Loader show={doneCount < 5} />
+      {!errorKind && <ScoreBoard findings={findings} />}
+      {!errorKind && <AdvisoryTable findings={findings} onJumpTo={jumpToCard} />}
       <ResultsContent>
         <ResultsMasonryGrid minColWidth={336}>
           {cardsToShow.map(({ card, data }) => (
