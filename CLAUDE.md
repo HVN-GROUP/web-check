@@ -154,6 +154,22 @@ yarn hold-my-beer    # format:fix && lint && typecheck — chạy trước khi c
 Yêu cầu **Node >= 22.12** (Astro 7). **Không có test suite**; `yarn hold-my-beer`
 là toàn bộ cửa kiểm tra.
 
+> **KHÔNG CÓ CI TỰ ĐỘNG trên branch `hvn`.** `ci.yml` của upstream chỉ chạy trên
+> PR nhắm vào `master`:
+> ```yaml
+> pull_request:
+>   branches: ['master']
+> ```
+> `hvn` không nằm trong danh sách, và ta **cố ý không sửa** file đó — thêm `hvn`
+> vào đấy là tạo một điểm xung đột ở file upstream cho mọi lần sync sau.
+>
+> Hệ quả: **push xanh không có nghĩa là code đúng.** Phải tự chạy
+> `yarn hold-my-beer` trước khi commit. Không ai chạy hộ.
+>
+> Khi có người thứ hai làm cùng repo, hãy thêm workflow MỚI
+> `.github/workflows/hvn-ci.yml` thay vì sửa `ci.yml` — giữ nguyên tắc "thêm
+> file, đừng sửa file".
+
 > **Đã từng:** Node 26 bản Homebrew **không còn `corepack`** (Node 25+ đã bỏ khỏi
 > bản phân phối), mà `package.json` pin `packageManager: yarn@1.22.22`. Cách vào
 > việc: `npx --yes yarn@1.22.22 <cmd>`. Đừng mất thời gian với `corepack enable`.
