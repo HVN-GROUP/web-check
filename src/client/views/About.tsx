@@ -9,7 +9,7 @@ import Nav from 'client/components/Form/Nav';
 import Button from 'client/components/Form/Button';
 import AdditionalResources from 'client/components/misc/AdditionalResources';
 import { StyledCard } from 'client/components/Form/Card';
-import docs, { about, featureIntro, license, fairUse, supportUs } from 'client/utils/docs';
+import docs, { about, featureIntro, license, fairUse, supportUs } from 'client/hvn/docs-hvn';
 
 const AboutContainer = styled.div`
 width: 95vw;

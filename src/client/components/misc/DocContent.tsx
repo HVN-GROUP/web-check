@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import docs, { type Doc } from 'client/utils/docs';
+import docs, { type Doc } from 'client/hvn/docs-hvn';
 import colors from 'client/styles/colors';
 import Heading from 'client/components/Form/Heading';
 

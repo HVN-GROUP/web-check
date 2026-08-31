@@ -9,7 +9,7 @@ import { StyledCard } from 'client/components/Form/Card';
 import Footer from 'client/components/misc/Footer';
 import FancyBackground from 'client/components/misc/FancyBackground';
 
-import docs from 'client/utils/docs';
+import docs from 'client/hvn/docs-hvn';
 import colors from 'client/styles/colors';
 import { determineAddressType, normalizeAddress } from 'client/utils/address-type-checker';
 

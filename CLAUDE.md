@@ -15,18 +15,21 @@ hoạt động mạnh. Sai lầm tốn kém nhất ở repo này không phải l
 | Repo này | `HVN-GROUP/web-check` (remote `origin`) |
 | Nguồn gốc | `lissy93/web-check` (remote `upstream`) — vẫn phát triển tích cực |
 | Phiên bản hiện tại | **v2.2.4**, sync bằng fast-forward, **0 commit riêng** |
-| Vai trò | Công cụ scan/OSINT, chạy ở **subdomain riêng** |
+| Vai trò | Công cụ scan/OSINT tại **webcheck.onl** (domain riêng) |
 | Site chính | **Payload CMS** ở repo `../hvn-payload-boilerplate` (Payload 3.88 + Next 16 + Postgres) |
-| CMS quản lý | Nội dung marketing & docs. Payload là site chính, web-check chỉ là công cụ |
+| CMS quản lý | Nội dung marketing & docs. Payload là site chính, web-check là công cụ tại `/check` |
 | Giấy phép | MIT (xem `LICENSE`) — được phép fork và dùng thương mại, giữ nguyên attribution |
 
 ```
-hvn.xxx          Payload / Next     ← trang chủ, blog, docs, khách hàng, SEO
-                 (repo hvn-payload-boilerplate)
-                      │  link / reverse-proxy
-                      ▼
-check.hvn.xxx    web-check          ← repo này, chỉ còn công cụ scan tại /check
+webcheck.onl/            Payload / Next  ← trang chủ, blog, /hang-muc/* (SEO)
+webcheck.onl/hang-muc/*  (repo hvn-payload-boilerplate, branch feat/webcheck-onl)
+         │  reverse-proxy theo đường dẫn
+         ▼
+webcheck.onl/check/*     web-check       ← repo này, công cụ quét. noindex.
 ```
+
+Một domain, nên link equity dồn về một chỗ. Giá trị SEO nằm ở các trang nội dung
+do Payload phục vụ; `/check/*` bị chặn index có chủ đích.
 
 ### Quyết định kiến trúc: KHÔNG nhúng Payload vào repo này
 
@@ -97,16 +100,16 @@ xảy ra ở đúng những vùng đã sửa theo bảng trên.
 |---|---|---|---|---|
 | 0 | Backup + sync lên v2.2.4 | repo này | — | ✅ Xong 31/08/2026, branch `pre-upstream-sync-20260831` |
 | 1 | Xác minh: typecheck / lint / format / build | repo này | — | ✅ 0 lỗi, build xanh |
-| A | Collections cho blog / docs / landing | `hvn-payload-boilerplate` | **Không** (repo khác) | ⬜ Chưa |
+| A | Collection + route hạng mục kiểm tra | `hvn-payload-boilerplate`, branch `feat/webcheck-onl` | **Không** (repo khác) | ✅ Xong, **chưa chạy migration** |
 | B | Reverse proxy + domain, không set `BOSS_SERVER` | hạ tầng + `.env` | **Không** | ⬜ Chưa |
-| C | Đổi theme app scan (màu, logo, font, bỏ link sponsor) | `src/client/styles/colors.ts`, `src/layouts/` | Thấp, nếu chỉ đổi token | ⬜ Chưa |
-| D | 40 mô tả hạng mục lấy từ CMS | merge đè `docs.ts` | Thấp (thêm file mới + 3 dòng import) | 📋 Đã có kế hoạch: [`docs/ke-hoach-noi-dung-cms.md`](docs/ke-hoach-noi-dung-cms.md) |
+| C | Giao diện HVN cho trang kết quả + Việt hoá | `src/client/hvn/**` + 5 file upstream | Thấp | ✅ Xong, đã xác minh bằng trình duyệt |
+| D | 40 mô tả hạng mục lấy từ CMS | `hvn/docs-hvn.ts` + 3 dòng import | Thấp | ✅ Đường ống xong, **chờ nội dung**. Kế hoạch: [`docs/ke-hoach-noi-dung-cms.md`](docs/ke-hoach-noi-dung-cms.md) |
 
-Chưa push gì lên `origin`. Việc push là quyết định của người dùng, phải hỏi.
+`master` đã push lên `origin`. Phần Payload nằm ở branch `feat/webcheck-onl` của
+repo `hvn-payload-boilerplate`, **chưa merge vào `main`** — xem lý do ở mục 8.
 
-**Nguyên tắc khi làm bước C:** đổi **token**, không viết lại component. Toàn bộ
-màu tập trung ở `src/client/styles/colors.ts`. Sửa một file đó cho ra diff 20 dòng
-thay vì 2000 dòng, và merge được.
+**Việc còn lại:** B (hạ tầng), nội dung cho D, và 3 màn còn lại của bản thiết kế
+(Trang chủ, Blog, Bài viết) — cả ba thuộc Payload, xem mục 8.
 
 ## 4. Lệnh
 
@@ -133,6 +136,20 @@ là toàn bộ cửa kiểm tra.
 
 Sau khi sync, dùng `format:check` chứ **đừng** `format:fix` — repo vừa fast-forward
 nên đã đúng format, chạy `fix` chỉ làm bẩn diff.
+
+> **Đã từng:** `yarn build` rồi thấy trang trắng, hydrate lỗi 404 trên
+> `_astro/main.*.js`. Nguyên nhân: `server.js` `import()` động
+> `dist/server/entry.mjs` và Node cache module ESM đó, nên **server đang chạy vẫn
+> phục vụ SSR cũ sau khi build**. Phải khởi động lại `node server.js`. Lần đó
+> `pkill -f "node server.js"` không diệt được tiến trình cũ, nó giữ cổng và
+> server mới chết im vì `EADDRINUSE` — kiểm tra bằng
+> `lsof -nP -iTCP:3000 -sTCP:LISTEN` rồi `kill -9` theo PID.
+
+> **Đã từng (máy dev macOS):** hai check `screenshot` và `tech-stack` trả 500.
+> Bản Chrome trong `~/.cache/puppeteer` thiếu framework (`dlopen` lỗi). Đặt
+> `CHROME_PATH` trỏ Chrome hệ thống là `screenshot` chạy lại;
+> `tech-stack` vẫn lỗi vì `wappalyzer` v6 không tương thích Chrome 148
+> (`Session closed`) — vấn đề của thư viện upstream, không phải của ta.
 
 Vài check cần `chromium` và `traceroute` có trong môi trường; thiếu thì check tự
 trả về `skipped`, không crash.
@@ -210,6 +227,33 @@ registry khai báo:
 card trong `components/Results/` + entry trong `utils/docs.ts` + (tuỳ chọn) rule
 phân tích. Đặt tên file `hvn-*` để merge upstream sạch.
 
+### Lớp giao diện HVN — `src/client/hvn/`
+
+Toàn bộ phần riêng của HVN nằm trong thư mục này, thêm file chứ không sửa file:
+
+| File | Vai trò |
+|---|---|
+| `tokens.css` | Token design system HVN |
+| `groups.ts` | 39 card → 5 nhóm chủ đề, kèm `auditGroupCoverage()` |
+| `scoring.ts` | `Finding[]` → điểm tổng + điểm nhóm. Dùng `Math.floor`, **đừng** đổi sang `round` (xem chú thích trong file) |
+| `severity.ts` | Mức nặng nhất của thẻ → màu chấm |
+| `labels.ts` | 39 tiêu đề tiếng Việt + chuỗi UI |
+| `findings.ts` | Dịch 70 tiêu đề + 38 mô tả cảnh báo của 24 rule |
+| `services.ts` | Hạng mục lỗi → dịch vụ HVN khắc phục |
+| `cardMeta.tsx` | Context đưa nhóm + chấm xuống vỏ `Card` mà không sửa 39 component |
+| `docs-hvn.ts` | Hợp nhất mô tả từ CMS lên `docs.ts`, ghi đè chứ không thay thế |
+| `components/` | `ResultsTopBar`, `ScoreBoard`, `AdvisoryTable`, `ResultsFilters` |
+
+**File upstream đã sửa** (5 chỗ, đều nhỏ và có lý do ghi trong file):
+`styles/colors.ts` (đổi giá trị, giữ tên khoá → cả 39 card đổi theme),
+`styles/index.css`, `styles/globals.tsx` (bỏ `color:#fff` và font mono toàn cục),
+`components/Form/Card.tsx` (vỏ thẻ), `views/Results.tsx` (lắp lớp HVN).
+Cộng 3 dòng import trong `DocContent.tsx`, `About.tsx`, `Home.tsx`.
+
+Nạp nội dung từ CMS: `yarn hvn:docs` (gọi `/api/hang-muc` của Payload, ghi
+`hvn/cms-docs.json`). Chạy TRƯỚC `yarn build`. Không bao giờ thoát mã lỗi —
+CMS chết thì dùng nguyên `docs.ts`.
+
 ## 6. Đa nền tảng
 
 `astro.config.mjs` chọn adapter theo `PLATFORM` (`node` | `vercel` | `netlify` —
@@ -242,3 +286,37 @@ check trả `{ skipped }` qua `requireEnv`, không sập.
 **Khi mở dịch vụ cho bên ngoài:** bật `API_ENABLE_RATE_LIMIT`, đặt
 `API_BLOCKED_HOSTS` cho dải nội bộ, và set `TRUST_PROXY` đúng số hop — nếu không
 rate-limit sẽ đếm theo IP của proxy chứ không phải IP người dùng.
+
+## 8. Ranh giới với repo Payload — đọc trước khi sửa gì bên đó
+
+`../hvn-payload-boilerplate` **là khung dùng lại cho nhiều website** của HVN, không
+phải site của webcheck.onl. Bằng chứng: trang chủ là *global* `HomePage` dùng
+chung, và `AGENTS.md` của nó mở đầu bằng quy trình "phỏng vấn trước khi dựng một
+website mới từ khung này".
+
+Vì vậy: **đừng nhồi schema riêng của WebCheck vào `main` của khung.** Làm thế là
+đẩy `HangMucKiemTra` và các section riêng của webcheck.onl sang mọi site khách
+khác dựng từ khung.
+
+Phần Payload của WebCheck hiện nằm ở **branch `feat/webcheck-onl`**, gồm:
+
+| File | Vai trò |
+|---|---|
+| `collections/HangMucKiemTra.ts` | 1 bản ghi = 1 hạng mục trong app + 1 trang `/hang-muc/{slug}` |
+| `lib/getHangMuc.ts` | 3 getter, lọc `_status=published`, bắt lỗi DB |
+| `app/(app)/hang-muc/[slug]/page.tsx` | Trang SEO, có breadcrumb + FAQPage schema |
+| `app/(app)/api/hang-muc/route.ts` | Nguồn cho `yarn hvn:docs` của web-check |
+
+**Chưa chạy migration.** Collection mới cần bảng trong Postgres; việc đó tác động
+vào database thật nên người vận hành tự chạy:
+
+```bash
+yarn migrate:create   # sinh file migration
+yarn migrate          # áp dụng, qua scripts/migrate-an-toan.mjs
+```
+
+**Quyết định còn treo:** repo nào sẽ là site thật của webcheck.onl? Hai hướng —
+tách repo mới từ khung (đúng doctrine của khung), hoặc giữ branch này rồi merge
+vào một repo site riêng. Chọn xong mới nên làm 3 màn còn lại của bản thiết kế
+(Trang chủ, Blog, Bài viết), vì cả ba đều là *nội dung + route* bên Payload chứ
+không phải code bên này.
