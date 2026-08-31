@@ -9,10 +9,7 @@ import Footer from 'client/components/misc/Footer';
 import Loader from 'client/components/misc/Loader';
 import ErrorBoundary from 'client/components/misc/ErrorBoundary';
 import DocContent from 'client/components/misc/DocContent';
-import ProgressBar, {
-  type LoadingJob,
-  type LoadingState,
-} from 'client/components/misc/ProgressBar';
+import { type LoadingJob, type LoadingState } from 'client/components/misc/ProgressBar';
 import ActionButtons from 'client/components/misc/ActionButtons';
 import AdditionalResources from 'client/components/misc/AdditionalResources';
 import NoResults from 'client/components/misc/NoResults';
@@ -24,6 +21,11 @@ import ViewRaw from 'client/components/misc/ViewRaw';
 import ResultsTopBar from 'client/hvn/components/ResultsTopBar';
 import ScoreBoard from 'client/hvn/components/ScoreBoard';
 import AdvisoryTable from 'client/hvn/components/AdvisoryTable';
+import ResultsFilters, { type FilterValue } from 'client/hvn/components/ResultsFilters';
+import { CardMetaProvider } from 'client/hvn/cardMeta';
+import { groupOfCard } from 'client/hvn/groups';
+import { hvnLabel, UI } from 'client/hvn/labels';
+import { buildToneLookup } from 'client/hvn/severity';
 
 import { determineAddressType, type AddressType } from 'client/utils/address-type-checker';
 import { hasData } from 'client/utils/result-processor';
@@ -56,6 +58,17 @@ const ResultsContent = styled.section`
     animation: cardFlash 1.2s ease-out;
     border-radius: 8px;
   }
+`;
+
+const NoFilterMatch = styled.p`
+  margin: 0 0 1rem;
+  padding: 28px;
+  background: var(--hvn-white);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  font-size: 14.5px;
+  color: var(--hvn-gray-600);
+  text-align: center;
 `;
 
 const makeSiteName = (address: string): string => {
@@ -121,11 +134,6 @@ const Results = (props: { address?: string }): JSX.Element => {
     setModalOpen(true);
   };
 
-  const showErrorModal = (content: ReactNode) => {
-    setModalContent(content);
-    setModalOpen(true);
-  };
-
   // Resolve each card's data, applying picker and falling back when needed
   const renderable = allCards.map(({ jobId, card }) => {
     const entry = jobsState[card.id];
@@ -135,9 +143,29 @@ const Results = (props: { address?: string }): JSX.Element => {
     return { jobId, card, data, entry };
   });
 
-  const cardsToShow = renderable.filter(({ data, entry }) => hasData(data) && !entry?.error);
+  const withData = renderable.filter(({ data, entry }) => hasData(data) && !entry?.error);
 
   const findings = useMemo(() => runAnalysis(jobsState), [jobsState]);
+  const toneOf = useMemo(() => buildToneLookup(findings), [findings]);
+
+  // Lọc theo nhóm chủ đề + tìm kiếm, theo dải nút của bản thiết kế
+  const [filter, setFilter] = useState<FilterValue>('all');
+  const [query, setQuery] = useState('');
+  const cardsToShow = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return withData.filter(({ card }) => {
+      const group = groupOfCard(card.id);
+      if (filter !== 'all' && group?.id !== filter) return false;
+      if (!q) return true;
+      // Tìm trong cả tiêu đề tiếng Việt và tiêu đề gốc, để gõ "ssl" hay
+      // "chứng thư" đều ra.
+      return (
+        hvnLabel(card.id, card.title).toLowerCase().includes(q) ||
+        card.title.toLowerCase().includes(q) ||
+        card.id.includes(q)
+      );
+    });
+  }, [withData, filter, query]);
 
   // Dữ liệu cho thanh trên cùng của bản thiết kế HVN
   const scannedAt = useMemo(() => new Date(), [address]);
@@ -203,28 +231,51 @@ const Results = (props: { address?: string }): JSX.Element => {
       {errorKind && (
         <NoResults kind={errorKind} address={address} error={ipLookupError || skipReason} />
       )}
-      <ProgressBar loadStatus={loadingJobs} showModal={showErrorModal} showJobDocs={showInfo} />
       <Loader show={doneCount < 5} />
       {!errorKind && <ScoreBoard findings={findings} />}
       {!errorKind && <AdvisoryTable findings={findings} onJumpTo={jumpToCard} />}
+      {!errorKind && (
+        <ResultsFilters
+          filter={filter}
+          onFilter={setFilter}
+          query={query}
+          onQuery={setQuery}
+          shown={cardsToShow.length}
+          total={withData.length}
+        />
+      )}
       <ResultsContent>
+        {!errorKind && withData.length > 0 && cardsToShow.length === 0 && (
+          <NoFilterMatch>{UI.noFilterMatch}</NoFilterMatch>
+        )}
         <ResultsMasonryGrid minColWidth={336}>
-          {cardsToShow.map(({ card, data }) => (
-            <div id={`card-${card.id}`} key={`eb-${card.id}`}>
-              <ErrorBoundary title={card.title}>
-                <card.Component
-                  key={card.id}
-                  data={data}
-                  title={card.title}
-                  actionButtons={makeActionButtons(
-                    card.title,
-                    () => retry(card.id),
-                    () => showInfo(card.id),
-                  )}
-                />
-              </ErrorBoundary>
-            </div>
-          ))}
+          {cardsToShow.map(({ card, data }) => {
+            const label = hvnLabel(card.id, card.title);
+            return (
+              <div id={`card-${card.id}`} key={`eb-${card.id}`}>
+                <ErrorBoundary title={label}>
+                  <CardMetaProvider
+                    value={{
+                      cardId: card.id,
+                      groupName: groupOfCard(card.id)?.name,
+                      dotTone: toneOf(card.id),
+                    }}
+                  >
+                    <card.Component
+                      key={card.id}
+                      data={data}
+                      title={label}
+                      actionButtons={makeActionButtons(
+                        label,
+                        () => retry(card.id),
+                        () => showInfo(card.id),
+                      )}
+                    />
+                  </CardMetaProvider>
+                </ErrorBoundary>
+              </div>
+            );
+          })}
         </ResultsMasonryGrid>
       </ResultsContent>
       {!errorKind && (
@@ -245,7 +296,7 @@ const Results = (props: { address?: string }): JSX.Element => {
         limit={3}
         draggablePercent={60}
         autoClose={2500}
-        theme="dark"
+        theme="light"
         position="bottom-right"
       />
       <Footer />

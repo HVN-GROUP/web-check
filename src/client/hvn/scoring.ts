@@ -41,6 +41,9 @@ export interface GroupScore {
   id: HvnGroupId;
   name: string;
   score: number;
+  /** false khi nhóm chưa có finding nào — đừng hiện điểm 100 màu xanh, vì
+   *  "chưa quét được" không phải là "đạt". */
+  hasFindings: boolean;
   /** Chuỗi phần trăm dùng trực tiếp cho width của thanh tiến độ */
   pct: string;
   colorVar: string;
@@ -64,13 +67,21 @@ const emptyCounts = (): SeverityCounts => ({
 
 const clamp = (n: number) => Math.max(0, Math.min(100, n));
 
-/** Điểm từ một tập finding: 100 trừ dần theo mức độ, chặn trong [0, 100]. */
+/**
+ * Điểm từ một tập finding: 100 trừ dần theo mức độ, chặn trong [0, 100].
+ *
+ * Dùng `Math.floor`, KHÔNG dùng `Math.round`. Hai lý do:
+ *  - Hiệu chuẩn: ví dụ của bản thiết kế cho 100 − 27,5 = 72,5. `round` ra 73,
+ *    `floor` ra đúng 72 như thiết kế.
+ *  - Trung thực: một cảnh báo lẻ (trừ 0,5) với `round` vẫn hiện 100 điểm —
+ *    đọc thành "hoàn hảo" trong khi vẫn có vấn đề. `floor` cho 99.
+ */
 const scoreFrom = (counts: SeverityCounts): number => {
   const penalty = (Object.keys(PENALTY) as Severity[]).reduce(
     (sum, sev) => sum + counts[sev] * PENALTY[sev],
     0,
   );
-  return Math.round(clamp(100 - penalty));
+  return Math.floor(clamp(100 - penalty));
 };
 
 /**
@@ -101,9 +112,9 @@ const countBySeverity = (findings: Finding[]): SeverityCounts =>
 /**
  * Tổng hợp `Finding[]` thành điểm tổng + điểm 5 nhóm.
  *
- * Lưu ý: một nhóm chưa có finding nào (vì các job của nó còn đang chạy hoặc bị
- * skip) sẽ được 100 điểm. Đó là chủ ý — thà hiện 100 rồi tụt dần khi dữ liệu về,
- * còn hơn hiện 0 làm người dùng tưởng website có vấn đề nghiêm trọng.
+ * Nhóm chưa có finding nào (job còn chạy hoặc bị skip) trả `hasFindings: false`
+ * để giao diện hiện dấu gạch trung tính. Trước đây nhóm đó hiện 100 điểm màu
+ * xanh cạnh dòng "Chưa có dữ liệu" — đọc lên thành "đã kiểm tra và đạt", sai.
  */
 export const computeScore = (findings: Finding[]): ScanScore => {
   const counts = countBySeverity(findings);
@@ -112,12 +123,14 @@ export const computeScore = (findings: Finding[]): ScanScore => {
   const groups: GroupScore[] = HVN_GROUPS.map((g) => {
     const groupCounts = countBySeverity(findings.filter((f) => groupOfCard(f.cardId)?.id === g.id));
     const score = scoreFrom(groupCounts);
+    const hasFindings = Object.values(groupCounts).some((n) => n > 0);
     return {
       id: g.id,
       name: g.name,
       score,
-      pct: `${score}%`,
-      colorVar: groupColor(score),
+      hasFindings,
+      pct: hasFindings ? `${score}%` : '0%',
+      colorVar: hasFindings ? groupColor(score) : 'var(--hvn-gray-300)',
       counts: groupCounts,
     };
   });

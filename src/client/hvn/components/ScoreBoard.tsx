@@ -207,8 +207,13 @@ const groupNote = (counts: Record<string, number>): string => {
   if (counts.critical) parts.push(`${counts.critical} nghiêm trọng`);
   if (counts.issue) parts.push(`${counts.issue} vấn đề`);
   if (counts.warning) parts.push(`${counts.warning} cảnh báo`);
-  if (!parts.length) return counts.pass ? `${counts.pass} hạng mục đạt` : 'Chưa có dữ liệu';
-  return parts.join(' · ');
+  if (parts.length) return parts.join(' · ');
+  if (counts.pass) return `${counts.pass} hạng mục đạt`;
+  // Nhóm chỉ có finding mức `info`: đã quét được, chỉ là không có gì đáng lo.
+  // Trước đây rơi vào "Chưa có dữ liệu" nên hiện 100 điểm cạnh dòng đó — đọc
+  // lên thành mâu thuẫn.
+  if (counts.info) return `${counts.info} thông tin ghi nhận`;
+  return 'Chưa có dữ liệu';
 };
 
 const ScoreBoard = (props: { findings: Finding[] }): JSX.Element => {
@@ -255,7 +260,7 @@ const ScoreBoard = (props: { findings: Finding[] }): JSX.Element => {
           <GroupCard key={g.id}>
             <GroupHead>
               <GroupName>{g.name}</GroupName>
-              <GroupScoreValue tone={g.colorVar}>{g.score}</GroupScoreValue>
+              <GroupScoreValue tone={g.colorVar}>{g.hasFindings ? g.score : '—'}</GroupScoreValue>
             </GroupHead>
             <Track>
               <Fill pct={g.pct} tone={g.colorVar} />

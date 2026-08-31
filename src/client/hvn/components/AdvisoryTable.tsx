@@ -13,6 +13,8 @@
 import styled from '@emotion/styled';
 import type { Finding, Severity } from 'client/analysis/types';
 import { serviceForCard } from '../services';
+import { findingTitle, findingDetail } from '../findings';
+import { UI } from '../labels';
 
 const Wrap = styled.section`
   max-width: var(--page-max);
@@ -61,7 +63,7 @@ const Row = styled.div`
   padding: 20px 28px;
   border-bottom: 1px solid var(--hvn-gray-100);
   display: grid;
-  grid-template-columns: 120px 1fr 260px;
+  grid-template-columns: 116px 1fr 300px;
   gap: 24px;
   align-items: center;
 
@@ -148,12 +150,15 @@ const ServiceLabel = styled.div`
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--hvn-gray-400);
+  white-space: nowrap;
 `;
 
 const ServiceName = styled.div`
+  margin-top: 2px;
   font-size: 13.5px;
   font-weight: var(--w-semibold);
   color: var(--hvn-ink);
+  line-height: 1.35;
 `;
 
 const CtaLink = styled.a`
@@ -218,15 +223,15 @@ const AdvisoryTable = (props: {
       <Card>
         <Head>
           <div>
-            <h3>Cảnh báo cần xử lý</h3>
-            <Sub>Mỗi cảnh báo kèm dịch vụ HVN có thể khắc phục</Sub>
+            <h3>{UI.advisoryTitle}</h3>
+            <Sub>{UI.advisorySub}</Sub>
           </div>
-          <Count>{rows.length} hạng mục</Count>
+          <Count>
+            {rows.length} {UI.itemsSuffix}
+          </Count>
         </Head>
 
-        {rows.length === 0 && (
-          <Empty>Chưa phát hiện vấn đề nào cần xử lý trong các hạng mục đã quét được.</Empty>
-        )}
+        {rows.length === 0 && <Empty>{UI.advisoryEmpty}</Empty>}
 
         {rows.map((f, i) => {
           const level = LEVELS[f.severity];
@@ -244,19 +249,19 @@ const AdvisoryTable = (props: {
                   onClick={() => props.onJumpTo(f.cardId)}
                   title="Xem chi tiết hạng mục"
                 >
-                  {f.title}
+                  {findingTitle(f.title)}
                 </Title>
-                {f.detail && <Detail>{f.detail}</Detail>}
+                {f.detail && <Detail>{findingDetail(f.detail)}</Detail>}
               </div>
               <Right>
                 {service && (
                   <>
                     <ServiceBox>
-                      <ServiceLabel>HVN xử lý</ServiceLabel>
+                      <ServiceLabel>{UI.handledByHvn}</ServiceLabel>
                       <ServiceName>{service.name}</ServiceName>
                     </ServiceBox>
                     <CtaLink href={service.path} target="_blank" rel="noreferrer">
-                      Tư vấn
+                      {UI.consult}
                     </CtaLink>
                   </>
                 )}
