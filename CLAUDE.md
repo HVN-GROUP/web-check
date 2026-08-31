@@ -100,7 +100,7 @@ xảy ra ở đúng những vùng đã sửa theo bảng trên.
 | A | Collections cho blog / docs / landing | `hvn-payload-boilerplate` | **Không** (repo khác) | ⬜ Chưa |
 | B | Reverse proxy + domain, không set `BOSS_SERVER` | hạ tầng + `.env` | **Không** | ⬜ Chưa |
 | C | Đổi theme app scan (màu, logo, font, bỏ link sponsor) | `src/client/styles/colors.ts`, `src/layouts/` | Thấp, nếu chỉ đổi token | ⬜ Chưa |
-| D | Mô tả 36 check lấy từ CMS | merge đè `docs.ts` | Trung bình | ⬜ Chưa quyết |
+| D | 40 mô tả hạng mục lấy từ CMS | merge đè `docs.ts` | Thấp (thêm file mới + 3 dòng import) | 📋 Đã có kế hoạch: [`docs/ke-hoach-noi-dung-cms.md`](docs/ke-hoach-noi-dung-cms.md) |
 
 Chưa push gì lên `origin`. Việc push là quyết định của người dùng, phải hỏi.
 
