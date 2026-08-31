@@ -14,7 +14,8 @@ hoạt động mạnh. Sai lầm tốn kém nhất ở repo này không phải l
 |---|---|
 | Repo này | `HVN-GROUP/web-check` (remote `origin`) |
 | Nguồn gốc | `lissy93/web-check` (remote `upstream`) — vẫn phát triển tích cực |
-| Phiên bản hiện tại | **v2.2.4**, sync bằng fast-forward, **0 commit riêng** |
+| Phiên bản hiện tại | Dựa trên upstream **v2.2.4** |
+| **Branch làm việc** | **`hvn`** — mọi việc của HVN nằm ở đây. `master` là bản gương upstream, ĐỪNG commit lên đó |
 | Vai trò | Công cụ scan/OSINT tại **webcheck.onl** (domain riêng) |
 | Site chính | **Payload CMS** ở repo `../hvn-payload-boilerplate` (Payload 3.88 + Next 16 + Postgres) |
 | CMS quản lý | Nội dung marketing & docs. Payload là site chính, web-check là công cụ tại `/check` |
@@ -77,17 +78,40 @@ response body was empty)`; đó là **đúng**, không phải lỗi.
 | `package.json`, `yarn.lock`, `tsconfig.json` | Tránh. Riêng `yarn.lock` một lần sync đã +12223 dòng |
 | `src/client/utils/docs.ts` | 573 dòng, upstream sửa thường xuyên. Nếu lấy mô tả từ CMS thì **merge đè lên**, đừng thay thế — để check mới của upstream vẫn có mô tả mặc định |
 
+### Mô hình hai branch
+
+```
+master   bản gương upstream, KHÔNG có commit nào của HVN
+   │     -> luôn `merge --ff-only` được, sync không bao giờ xung đột
+   ▼
+hvn      việc của HVN. Chủ động merge master vào khi muốn cập nhật.
+```
+
+Lý do tách: nếu HVN commit thẳng lên `master` thì mỗi lần sync là một merge thật
+trên nhánh chính, và xung đột xảy ra ở nơi không kiểm soát được. Tách ra thì
+`master` luôn sạch, còn xung đột (nếu có) chỉ xuất hiện đúng lúc ta cố ý merge.
+
+**Đừng commit lên `master`.** Nó phải giữ nguyên đúng nội dung upstream.
+
 ### Quy trình sync — làm mỗi 1–2 tháng, đừng để tụt nữa
 
 ```bash
 git branch pre-upstream-sync-$(date +%Y%m%d)   # LUÔN backup trước
 cp .env /tmp/env.backup                        # xem cảnh báo .env bên dưới
+
 git fetch upstream --tags
-git merge --ff-only upstream/master            # còn 0 commit riêng thì ff được
+git checkout master
+git merge --ff-only upstream/master            # luôn thành công vì master sạch
+git push origin master
+
+git checkout hvn
+git merge master                               # xung đột (nếu có) xảy ra Ở ĐÂY
+npx --yes yarn@1.22.22 install                 # yarn.lock thường đổi nhiều
+npx --yes yarn@1.22.22 hold-my-beer            # format + lint + typecheck
 ```
 
-Khi đã có commit riêng thật, `--ff-only` sẽ fail và thành merge thật. Xung đột chỉ
-xảy ra ở đúng những vùng đã sửa theo bảng trên.
+Xung đột chỉ xảy ra ở đúng những vùng đã sửa theo bảng trên. Với `yarn.lock`,
+lấy bản của upstream rồi cài lại: `git checkout --theirs yarn.lock`.
 
 > **Đã từng:** `.env` bị **git track** trong fork (dù `.gitignore` có liệt kê — vì
 > nó đã bị commit trước khi thêm rule). Upstream đã bỏ track `.env` và chuyển sang
