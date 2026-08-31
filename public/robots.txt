@@ -1,3 +1,12 @@
 # https://www.robotstxt.org/robotstxt.html
+
+# Scan results live at /check/<target> - an unbounded URL space where rendering a
+# single page fires a full set of live scans against third-party APIs (Shodan,
+# Google Cloud, Tranco, ...). Blocking the crawl is what actually prevents that
+# cost; the `noindex` tag on those pages only takes effect once a crawler has
+# already paid it, so it serves as a backstop for URLs already known.
+# /check itself (the entry form) stays crawlable - it is a single page.
 User-agent: *
-Disallow:
+Disallow: /check/
+
+Sitemap: https://webcheck.onl/sitemap-index.xml

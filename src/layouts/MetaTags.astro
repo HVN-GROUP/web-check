@@ -4,6 +4,13 @@ interface Props {
   description?: string;
   keywords?: string;
   customSchemaJson?: any;
+  /**
+   * Keep this page out of search indexes. Set it for pages whose URL space is
+   * unbounded (like the scan results at /check/<target>) - indexing those buries
+   * the real content under endless thin pages, and every crawl of one fires a
+   * full set of live scans against third-party APIs.
+   */
+  noindex?: boolean;
   breadcrumbs?: Array<{
     name: string;
     item: string;
@@ -20,18 +27,20 @@ const siteInfo = {
     'web check, OSINT, website security, security audit, DNS lookup, SSL check, ' +
     'tech stack detection, website analyzer, web tools, open source',
   themeColor: '#c1fb41',
-  author: 'Alicia Sykes',
-  twitter: '@Lissy_Sykes',
-  site: import.meta.env.SITE_URL || 'https://web-check.xyz',
+  author: import.meta.env.SITE_AUTHOR || 'HVN Group',
+  twitter: import.meta.env.SITE_TWITTER || '',
+  site: import.meta.env.SITE_URL || 'https://webcheck.onl',
   analytics: {
-    enable: import.meta.env.ENABLE_ANALYTICS,
-    domain: 'web-check.as93.net',
-    script: 'https://no-track.as93.net/js/script.js',
+    // Both the domain and the script are ours to set - left unset, no counter is
+    // loaded at all, so enabling analytics can never report to somebody else.
+    enable: import.meta.env.ENABLE_ANALYTICS === 'true',
+    domain: import.meta.env.ANALYTICS_DOMAIN || '',
+    script: import.meta.env.ANALYTICS_SCRIPT || '',
   },
 };
 
 // Resolve per-page values, falling back to siteInfo defaults
-const { title, description, keywords, breadcrumbs, customSchemaJson } = Astro.props;
+const { title, description, keywords, breadcrumbs, customSchemaJson, noindex } = Astro.props;
 const pageTitle = title ?? siteInfo.title;
 const ogTitle = title ?? siteInfo.titleLong;
 const pageDescription = description ?? siteInfo.description;
@@ -71,7 +80,7 @@ const makeBreadcrumbs = () => {
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="generator" content={Astro.generator} />
-<meta name="robots" content="index, follow" />
+<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
 
 <!-- Icons and colors -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -92,12 +101,12 @@ const makeBreadcrumbs = () => {
 <meta name="twitter:title" content={ogTitle} />
 <meta name="twitter:description" content={pageDescription} />
 <meta name="twitter:image" content={ogImage} />
-<meta name="twitter:site" content={twitter} />
-<meta name="twitter:creator" content={twitter} />
+{twitter && <meta name="twitter:site" content={twitter} />}
+{twitter && <meta name="twitter:creator" content={twitter} />}
 
 <!-- Non-tracking hit counter -->
 {
-  analytics.enable && (
+  analytics.enable && analytics.domain && analytics.script && (
     <script is:inline defer data-domain={analytics.domain} src={analytics.script} />
   )
 }

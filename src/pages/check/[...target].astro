@@ -17,9 +17,14 @@ if (searchUrl) {
 
 const { target } = Astro.params;
 const pageTitle = target ? `${target} | Web Check` : 'Web Check';
+
+// /check/<target> is an unbounded URL space, and rendering one runs a full set of
+// live scans - so keep the result pages out of indexes. /check itself (the entry
+// form) is a single page, and stays indexable.
+const noindex = !!target;
 ---
 
-<BaseLayout preloadBodyFont={false} title={pageTitle}>
+<BaseLayout preloadBodyFont={false} title={pageTitle} noindex={noindex}>
   <link
     slot="head"
     href="/fonts/PTMono-Regular.woff2"
