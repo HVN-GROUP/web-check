@@ -93,6 +93,22 @@ trên nhánh chính, và xung đột xảy ra ở nơi không kiểm soát đư�
 
 **Đừng commit lên `master`.** Nó phải giữ nguyên đúng nội dung upstream.
 
+### Nhánh `hvn` này được tiêu thụ ở nơi khác — nhớ đẩy tiếp
+
+Repo site `HVN-GROUP/hvn-payload-boilerplate` nhánh `webcheck.onl` chứa **một
+subtree** lấy từ đúng nhánh `hvn` này, đặt ở `web-check/`. Đó mới là bản chạy
+thật của webcheck.onl.
+
+Nghĩa là: **push lên `hvn` chưa đủ.** Sau khi push, phải kéo sang bên đó:
+
+```bash
+cd ../hvn-payload-boilerplate && git checkout webcheck.onl
+git subtree pull --prefix=web-check webcheck hvn --squash
+```
+
+Và chiều ngược lại: **đừng sửa code trong `web-check/` của repo site** — lần
+`subtree pull` sau sẽ ghi đè. Mọi thay đổi của app quét phải bắt đầu từ đây.
+
 ### Quy trình sync — làm mỗi 1–2 tháng, đừng để tụt nữa
 
 ```bash
