@@ -338,7 +338,26 @@ Vì vậy: **đừng nhồi schema riêng của WebCheck vào `main` của khung
 đẩy `HangMucKiemTra` và các section riêng của webcheck.onl sang mọi site khách
 khác dựng từ khung.
 
-Phần Payload của WebCheck hiện nằm ở **branch `feat/webcheck-onl`**, gồm:
+### Quy ước: mỗi site là một branch của khung
+
+Đây là quy ước **đã có sẵn** trong repo khung, không phải do ta nghĩ ra:
+
+```
+main          khung dùng chung
+vuongnm.com   site  (53 commit riêng)
+fireflies     site  (2 commit riêng, có thiet-ke/*.dc.html)
+webcheck.onl  site  ← của ta
+```
+
+Tên branch **không có tiền tố**. `feat/` mang nghĩa "nhánh tính năng, merge xong
+rồi xoá"; nhánh site là **vĩnh viễn và KHÔNG BAO GIỜ merge vào `main`**. Cập nhật
+khung thì làm ngược lại: `git merge main` vào nhánh site.
+
+**Bản bàn giao thiết kế nằm ở `thiet-ke/` của nhánh site** (giống `fireflies`),
+không nằm trong repo web-check. Bên này `hvn-webcheck-layout-design/` chỉ là bản
+sao tạm, đã loại khỏi git qua `.git/info/exclude`.
+
+Phần Payload của WebCheck nằm ở **branch `webcheck.onl`**, gồm:
 
 | File | Vai trò |
 |---|---|
@@ -355,8 +374,6 @@ yarn migrate:create   # sinh file migration
 yarn migrate          # áp dụng, qua scripts/migrate-an-toan.mjs
 ```
 
-**Quyết định còn treo:** repo nào sẽ là site thật của webcheck.onl? Hai hướng —
-tách repo mới từ khung (đúng doctrine của khung), hoặc giữ branch này rồi merge
-vào một repo site riêng. Chọn xong mới nên làm 3 màn còn lại của bản thiết kế
-(Trang chủ, Blog, Bài viết), vì cả ba đều là *nội dung + route* bên Payload chứ
-không phải code bên này.
+**3 màn còn lại của bản thiết kế** (Trang chủ, Blog, Bài viết) thuộc nhánh
+`webcheck.onl` bên đó, không phải repo này — cả ba là *nội dung + route* của
+Payload. Repo này chỉ giữ màn Trang kết quả.
