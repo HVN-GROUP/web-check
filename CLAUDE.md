@@ -2,6 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> # ⚠️ REPO NÀY CHỈ CÒN ĐỂ LƯU TRỮ
+>
+> **Đừng phát triển tiếp ở đây.** Nguồn sự thật của app quét đã chuyển sang
+> thư mục `web-check/` trong:
+>
+> ```
+> HVN-GROUP/hvn-payload-boilerplate   nhánh  webcheck.onl
+> ```
+>
+> Ở đó nó là một **subtree lấy thẳng từ `Lissy93/web-check`**, nằm cạnh app
+> Payload phục vụ phần còn lại của webcheck.onl.
+>
+> Repo này được giữ lại vì nó chứa **9 commit gốc với thông điệp chi tiết** —
+> hữu ích khi cần truy vết "vì sao ngày đó sửa chỗ này". Bên repo site, cả 9
+> commit đó đã gom thành một.
+>
+> Mọi thứ viết bên dưới vẫn đúng về mặt kỹ thuật, nhưng mô tả bố cục CŨ (hai
+> repo riêng, chuỗi cập nhật 4 chặng). Bố cục hiện hành đọc ở `CLAUDE.md` gốc
+> của repo site.
+
 # web-check của HVN — đọc trước khi gõ dòng code đầu tiên
 
 Đây **không phải** dự án của riêng ta. Đây là **fork** của một dự án nguồn mở đang
